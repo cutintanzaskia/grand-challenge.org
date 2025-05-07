@@ -11,7 +11,10 @@ from grandchallenge.components.backends.docker_client import (
     get_container_id,
     inspect_container,
 )
-from grandchallenge.components.tasks import stop_expired_services
+from grandchallenge.components.tasks import (
+    start_service,
+    stop_expired_services,
+)
 from grandchallenge.reader_studies.models import InteractiveAlgorithmChoices
 from grandchallenge.workstations.models import (
     Session,
@@ -98,8 +101,11 @@ def test_session_start(
         django_capture_on_commit_callbacks=django_capture_on_commit_callbacks,
     )
 
-    with django_capture_on_commit_callbacks(execute=True):
-        s = SessionFactory(workstation_image=wsi)
+    # with django_capture_on_commit_callbacks(execute=True):
+
+    s = SessionFactory(workstation_image=wsi)
+
+    start_service(**s.task_kwargs)
 
     try:
         assert get_container_id(name=s.service.container_name)
