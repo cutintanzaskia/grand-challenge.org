@@ -35,6 +35,7 @@ from grandchallenge.components.models import (  # noqa: F401
     ComponentInterfaceValue,
     ComponentJob,
     ComponentJobManager,
+    ComponentJobUtilization,
     ImportStatusChoices,
     Tarball,
 )
@@ -1332,6 +1333,23 @@ class JobUserObjectPermission(UserObjectPermissionBase):
 
 class JobGroupObjectPermission(GroupObjectPermissionBase):
     content_object = models.ForeignKey(Job, on_delete=models.CASCADE)
+
+
+class JobUtilization(ComponentJobUtilization):
+    job = models.OneToOneField(
+        Job,
+        related_name="job_utilization",
+        null=True,
+        on_delete=models.SET_NULL,
+    )
+
+    def save(self, *args, **kwargs) -> None:
+        if self._state.adding:
+            self.creator = self.job.creator
+            self.algorithm_image = self.job.algorithm_image
+            self.algorithm = self.job.algorithm_image.algorithm
+
+        super().save(*args, **kwargs)
 
 
 @receiver(post_delete, sender=Job)
